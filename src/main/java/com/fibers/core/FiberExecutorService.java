@@ -12,7 +12,7 @@ import java.util.concurrent.Future;
 /**
  * Created by mohan.pandian on 12/03/17.
  */
-public class FiberExecutorCompletionService<T> {
+public class FiberExecutorService<T> {
     private final Channel<Future<T>> channel = Channels.newChannel(-1);
 
     @Suspendable

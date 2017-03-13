@@ -2,33 +2,31 @@ package com.fibers.core;
 
 import co.paralleluniverse.fibers.Fiber;
 import co.paralleluniverse.fibers.SuspendExecution;
-import com.fibers.hystrix.FiberThreadPoolExecutor;
 
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorCompletionService;
-import java.util.concurrent.Future;
 
 /**
  * Created by mohan.pandian on 10/03/17.
  */
 public class FiberCallableTest {
-    public static void main(String[] args) throws ExecutionException, InterruptedException {
-        System.out.println(getFiber().start().get());
+    public static void main(String[] args) throws ExecutionException, InterruptedException, SuspendExecution {
+        FiberExecutorCompletionService<String> completionService = new FiberExecutorCompletionService();
+
+        startFiber(completionService, "Hello World 1", 3000);
+        startFiber(completionService, "Hello World 2", 2000);
+        startFiber(completionService, "Hello World 3", 1000);
+        System.out.println(completionService.take().get());
+        System.out.println(completionService.take().get());
+        System.out.println(completionService.take().get());
     }
 
-    private static Fiber getFiber() {
-        return new Fiber<String>() {
+    private static void startFiber(FiberExecutorCompletionService completionService, String message, long sleep) {
+        new Fiber<Void>() {
             @Override
-            protected String run() throws SuspendExecution, InterruptedException {
-                ExecutorCompletionService executorCompletionService = new FiberExecutorCompletionService(new FiberThreadPoolExecutor());
-                Future<String> future = executorCompletionService.submit(new FiberCallable());
-                try {
-                    return future.get();
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
-                    return null;
-                }
+            protected Void run() throws SuspendExecution, InterruptedException {
+                completionService.submit(new FiberCallable(message, sleep));
+                return null;
             }
-        };
+        }.start();
     }
 }

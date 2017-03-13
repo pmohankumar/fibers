@@ -11,9 +11,6 @@ com.netflix.hystrix.HystrixCommand.*
 com.netflix.hystrix.strategy.concurrency.HystrixContextScheduler$HystrixContextSchedulerWorker.*
 com.netflix.hystrix.strategy.concurrency.HystrixContextScheduler$ThreadPoolWorker.*
 java.util.concurrent.AbstractExecutorService.*
-com.fibers.FiberThreadPoolExecutor.*
-com.fibers.FiberExecutorCompletionService.*
-com.fibers.FiberExecutorCompletionService$QueueingFuture.*
 co.paralleluniverse.fibers.FiberUtil.*
 java.util.concurrent.FutureTask.*
 java.util.concurrent.Executors$RunnableAdapter.*
