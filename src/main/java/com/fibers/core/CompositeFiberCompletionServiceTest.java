@@ -11,26 +11,28 @@ import java.util.concurrent.TimeoutException;
  */
 public class CompositeFiberCompletionServiceTest {
     public static void main(String[] args) {
-        CompositeFiberCompletionService<String> completionService = new CompositeFiberCompletionService<>();
+        CompositeFiberCompletionService<String> requiredCompletionService = new CompositeFiberCompletionService<>();
+        CompositeFiberCompletionService<String> optionalCompletionService = new CompositeFiberCompletionService<>();
 
-        List<Future<String>> requiredFutures = submitRequired(completionService);
-        List<Future<String>> optionalFutures = submitOptional(completionService);
+        List<Future<String>> requiredFutures = submitRequired(requiredCompletionService);
+        List<Future<String>> optionalFutures = submitOptional(optionalCompletionService);
 
         long TIMEOUT = 5000;
         long START_TIME = System.currentTimeMillis();
         long elapsedTime = System.currentTimeMillis() - START_TIME;
         long remainingTime = TIMEOUT - elapsedTime;
-        wait(completionService, true, requiredFutures, remainingTime);
+        wait(requiredCompletionService, true, requiredFutures, remainingTime);
 
         elapsedTime = System.currentTimeMillis() - START_TIME;
         remainingTime = TIMEOUT - elapsedTime;
-        wait(completionService, false, optionalFutures, remainingTime);
+        wait(optionalCompletionService, false, optionalFutures, remainingTime);
 
         elapsedTime = System.currentTimeMillis() - START_TIME;
         remainingTime = TIMEOUT - elapsedTime;
         System.out.println("Done with remainingTime: " + remainingTime);
 
-        completionService.shutdown();
+        requiredCompletionService.shutdown();
+        optionalCompletionService.shutdown();
     }
 
     private static List<Future<String>> submitRequired(CompositeFiberCompletionService completionService) {
@@ -38,7 +40,7 @@ public class CompositeFiberCompletionServiceTest {
                 new FiberCallable("Hello World 1", 1000),
                 new FiberCallable("Hello World 2", 2000),
                 new FiberCallable("Hello World 3", 3000)
-        ), true);
+        ));
     }
 
     private static List<Future<String>> submitOptional(CompositeFiberCompletionService completionService) {
@@ -46,14 +48,14 @@ public class CompositeFiberCompletionServiceTest {
                 new FiberCallable("Hello World 4", 4000),
                 new FiberCallable("Hello World 43", 4300),
                 new FiberCallable("Hello World 46", 4600)
-        ), false);
+        ));
     }
 
     private static void wait(CompositeFiberCompletionService completionService, boolean required, List<Future<String>> futures, long remainingTime) {
         String requiredOrOptional = required ? "required" : "optional";
         System.out.println("Waiting for " + requiredOrOptional + ": " + remainingTime);
         try {
-            completionService.wait(futures.size(), remainingTime, required);
+            completionService.wait(futures.size(), remainingTime);
         } catch (TimeoutException e) {
             System.out.println("Timeout exception in " + requiredOrOptional);
             cancel(futures);

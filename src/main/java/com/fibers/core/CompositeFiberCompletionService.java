@@ -14,11 +14,10 @@ import java.util.concurrent.*;
  * Created by mohan.pandian on 15/03/17.
  */
 public class CompositeFiberCompletionService<T> {
-    private final Channel<Future<T>> requiredChannel = Channels.newChannel(-1);
-    private final Channel<Future<T>> optionalChannel = Channels.newChannel(-1);
+    private final Channel<Future<T>> channel = Channels.newChannel(-1);
 
     @Suspendable
-    private Future<T> submit(Callable<T> callable, boolean required) {
+    private Future<T> submit(Callable<T> callable) {
         return new Fiber<T>() {
             @Override
             protected T run() throws SuspendExecution, InterruptedException {
@@ -29,24 +28,23 @@ public class CompositeFiberCompletionService<T> {
                 } catch (Exception e) {
                     throw new RuntimeException(e.getMessage());
                 } finally {
-                    getChannel(required).send(this);
+                    channel.send(this);
                 }
             }
         }.start();
     }
 
     @Suspendable
-    public List<Future<T>> submit(List<Callable<T>> callables, boolean required) {
+    public List<Future<T>> submit(List<Callable<T>> callables) {
         List<Future<T>> futures = new ArrayList<>();
         for (Callable<T> callable : callables) {
-            futures.add(submit(callable, required));
+            futures.add(submit(callable));
         }
         return futures;
     }
 
     @Suspendable
-    public void wait(int totalCount, long timeout, boolean required) throws TimeoutException, InterruptedException, ExecutionException {
-        Channel<Future<T>> channel = getChannel(required);
+    public void wait(int totalCount, long timeout) throws TimeoutException, InterruptedException, ExecutionException {
         long startTime = System.currentTimeMillis();
         for (int i = 0; i < totalCount; i++) {
             long currentTime = System.currentTimeMillis();
@@ -66,12 +64,7 @@ public class CompositeFiberCompletionService<T> {
         }
     }
 
-    private Channel<Future<T>> getChannel(boolean required) {
-        return required ? requiredChannel : optionalChannel;
-    }
-
     public void shutdown() {
-        requiredChannel.close();
-        optionalChannel.close();
+        channel.close();
     }
 }
