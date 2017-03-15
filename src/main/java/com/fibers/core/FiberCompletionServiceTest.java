@@ -8,9 +8,9 @@ import java.util.concurrent.ExecutionException;
 /**
  * Created by mohan.pandian on 10/03/17.
  */
-public class FiberCallableTest {
+public class FiberCompletionServiceTest {
     public static void main(String[] args) throws ExecutionException, InterruptedException, SuspendExecution {
-        FiberExecutorCompletionService<String> completionService = new FiberExecutorCompletionService();
+        FiberCompletionService<String> completionService = new FiberCompletionService();
 
         startFiber(completionService, "Hello World 1", 3000);
         startFiber(completionService, "Hello World 2", 2000);
@@ -18,9 +18,11 @@ public class FiberCallableTest {
         System.out.println(completionService.take().get());
         System.out.println(completionService.take().get());
         System.out.println(completionService.take().get());
+
+        completionService.shutdown();
     }
 
-    private static void startFiber(FiberExecutorCompletionService completionService, String message, long sleep) {
+    private static void startFiber(FiberCompletionService completionService, String message, long sleep) {
         new Fiber<Void>() {
             @Override
             protected Void run() throws SuspendExecution, InterruptedException {
