@@ -43,7 +43,7 @@
     </prerequisites>
 
     <properties>
-        <quasar.version>0.7.6</quasar.version>
+        <quasar.version>0.7.8</quasar.version>
         <comsat.version>0.7.0</comsat.version>
         <hystrix.version>1.5.9</hystrix.version>
     </properties>
